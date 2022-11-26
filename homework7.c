@@ -9,8 +9,12 @@
 
 // Brennan Ziadeh, 1001773667 CSE 3318, Homework #7
 
+enum Color { WHITE, GRAY, BLACK };
+
 int get_vertex(char *course_name, char *courses[], int size);
 void print_matrix(int size, int matrix[][size]);
+void depth_first_search(int size, int matrix[][size], int *result);
+void dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, int *pred);
 
 int main() {
     printf("\nThis program will read, from a file, a list of courses and their prerequisites and will print the list in which to take courses.\n");
@@ -55,7 +59,7 @@ int main() {
             matrix[i][j] = 0;
         }
     }
-            
+
     for(int i = 0; i < size; i++) {
         if(fgets(line, MAX_LINE_LENGTH, file) != NULL) {
             char* course_name = strtok(line, " \n");
@@ -70,7 +74,6 @@ int main() {
             }
         }
     }
-
     printf("\nAdjacency matrix:\n");
     print_matrix(size, matrix);
     return 0;
@@ -83,6 +86,28 @@ int get_vertex(char *course_name, char *courses[], int size) {
         }
     }
     return 0;   
+}
+
+void depth_first_search(int size, int matrix[][size], int *result) {
+    enum Color colors[size];
+    int pred[size];
+    
+    for(int i = 0; i < size; i++) {
+        colors[i] = WHITE;
+        pred[i] = -1;
+    }
+
+    for(int i = 0; i < size; i++) {
+        if(colors[i] == WHITE) {
+            dfs_visit(size, matrix, i, colors, pred);
+        }
+    }
+}
+
+void dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, int *pred) {
+
+    colors[vertex] = GRAY;
+
 }
 
 void print_matrix(int size, int matrix[][size]) {
