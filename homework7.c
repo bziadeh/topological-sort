@@ -50,20 +50,30 @@ int main() {
     // the information given
     printf("\nAdjacency matrix:");
     int matrix[size][size];
+    for(int i = 0; i < size; i++)
+        for(int j = 0; j < size; j++)
+            matrix[i][j] = 0;
+
     for(int i = 0; i < size; i++) {
         if(fgets(line, MAX_LINE_LENGTH, file) != NULL) {
             char* course_name = strtok(line, " \n");
-
+            int dest = getVertex(course_name, courses, size);
             while(course_name) {
                 course_name = strtok(NULL, " \n");
-                
                 if(course_name) {
-                    int dest = getVertex(course_name, courses, size);
-                    printf("%d\n", dest);
+                    int from = getVertex(course_name, courses, size);
+                    matrix[from][dest] = 1;
                 }
             }
         }
+    }
 
+    printf("\n\n");
+    for(int i = 0; i < size; i++) {
+        for(int j = 0; j < size; j++) {
+            printf("%5d", matrix[i][j]);
+        }
+        printf("\n");
     }
     return 0;
 }
