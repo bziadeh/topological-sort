@@ -9,6 +9,8 @@
 
 // Brennan Ziadeh, 1001773667 CSE 3318, Homework #7
 
+int getVertex(char *course_name, char *courses[], int size);
+
 int main() {
     printf("\nThis program will read, from a file, a list of courses and their prerequisites and will print the list in which to take courses.\n");
     
@@ -36,8 +38,41 @@ int main() {
         strcpy(courses[size], course_name);
         size++;
     }
+    rewind(file); // so we can read again later
 
+    printf("Number of vertices in built graph: N = %d\n", size);
+    printf("Vertex - coursename correspondence\n");
+    for(int i = 0; i < size; i++) {
+        printf("%d - %s\n", i, courses[i]);
+    }
 
+    // Build our adjacency matrix using the
+    // the information given
+    printf("\nAdjacency matrix:");
+    int matrix[size][size];
+    for(int i = 0; i < size; i++) {
+        if(fgets(line, MAX_LINE_LENGTH, file) != NULL) {
+            char* course_name = strtok(line, " \n");
 
+            while(course_name) {
+                course_name = strtok(NULL, " \n");
+                
+                if(course_name) {
+                    int dest = getVertex(course_name, courses, size);
+                    printf("%d\n", dest);
+                }
+            }
+        }
+
+    }
     return 0;
+}
+
+int getVertex(char *course_name, char *courses[], int size) {
+    for(int i = 0; i < size; i++) {
+        if(strcmp(course_name, courses[i]) == 0) {
+            return i;
+        }
+    }
+    return 0;   
 }
