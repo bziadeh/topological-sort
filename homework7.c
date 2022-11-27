@@ -22,6 +22,7 @@ void depth_first_search(int size, int matrix[][size], Result *result);
 void dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, Result *result);
 int *get_adjacent(int vertex, int matrix_size, int matrix[][matrix_size], int *adj_size);
 int compare_adjacent(const void* a, const void* b);
+int *reverse(int *vertex_array, int size);
 
 int main() {
     printf("\nThis program will read, from a file, a list of courses and their prerequisites and will print the list in which to take courses.\n");
@@ -89,13 +90,13 @@ int main() {
     result->elements = malloc(sizeof(int) * MAX_FILE_LENGTH);
     
     depth_first_search(size, matrix, result);
-    if(result->size == -1) {
+    if(result->size < 1) {
         printf("There was at least one cycle. There is no possible ordering of the courses.\n\n");
         return 0;
     }
 
     printf("\nOrder in which to take courses:\n");
-    for(int i = 0; i < result->size; i++) {
+    for(int i = result->size - 1; i >= 0; i--) {
         
         int vertex = result->elements[i];
         char *course = courses[vertex];
@@ -156,7 +157,7 @@ void dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, Res
 int * get_adjacent(int vertex, int matrix_size, int matrix[][matrix_size], int *adj_size) {
     int *adjacent = malloc(sizeof(int) * matrix_size);
     for(int i = 0, j = 0; i < matrix_size; i++) {
-        if(matrix[i][vertex] != 0) {
+        if(matrix[vertex][i] != 0) {
             adjacent[j++] = i; 
             (*adj_size)++;
         }
