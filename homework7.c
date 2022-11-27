@@ -18,8 +18,10 @@ typedef struct {
 
 int get_vertex(char *course_name, char *courses[], int size);
 void print_matrix(int size, int matrix[][size]);
-int depth_first_search(int size, int matrix[][size], Result *result);
-int dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, int *pred, Result *result);
+void depth_first_search(int size, int matrix[][size], Result *result);
+void dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, Result *result);
+int *get_adjacent(int vertex, int matrix_size, int matrix[][matrix_size], int *adj_size);
+int compare_adjacent(const void* a, const void* b);
 
 int main() {
     printf("\nThis program will read, from a file, a list of courses and their prerequisites and will print the list in which to take courses.\n");
@@ -86,8 +88,8 @@ int main() {
     result->size = 0;
     result->elements = malloc(sizeof(int) * MAX_FILE_LENGTH);
     
-    int res_size = depth_first_search(size, matrix, result);
-    if(res_size == -1) {
+    depth_first_search(size, matrix, result);
+    if(result->size == -1) {
         printf("Cycle found. ending program.\n");
         return 0;
     }
@@ -112,41 +114,59 @@ int get_vertex(char *course_name, char *courses[], int size) {
     return 0;   
 }
 
-int depth_first_search(int size, int matrix[][size], Result *result) {
+void depth_first_search(int size, int matrix[][size], Result *result) {
     enum Color colors[size];
-    int pred[size];
     
     for(int i = 0; i < size; i++) {
         colors[i] = WHITE;
-        pred[i] = -1;
+        result->elements[i] = -1;
     }
 
     for(int i = 0; i < size; i++) {
         if(colors[i] == WHITE) {
-            return dfs_visit(size, matrix, i, colors, pred, result);
+            dfs_visit(size, matrix, i, colors, result);
         }
     }
-
-    return 0;
 }
 
-int dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, int *pred, Result *result) {
+void dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, Result *result) {
     colors[vertex] = GRAY;
-    for(int i = 0; i < size; i++) {
-        int adj = matrix[vertex][i];
-        printf("adjacent node %d\n", adj);
-        if(colors[adj] == WHITE) {
-            pred[adj] = vertex;
-            dfs_visit(size, matrix, vertex, colors, pred, result);
-        }
-        if(colors[adj] == GRAY) {
-            return -1;
+    int adj_size = 0;
+    int *adjacent = get_adjacent(vertex, size, matrix, &adj_size);
+
+    qsort(adjacent, adj_size, sizeof(int), compare_adjacent);
+    for(int i = 0, j = 0; i < adj_size; i++) {
+        int adj_vertex = adjacent[i];
+        enum Color color = colors[adj_vertex];
+
+        if(color == WHITE) {
+            dfs_visit(size, matrix, adj_vertex, colors, result);
+        } else if(color == GRAY) {
+            result->size = -1;
+            return;
         }
     }
+
     colors[vertex] = BLACK;
     result->elements[result->size] = vertex;
     result->size++;
-    return result->size;
+}
+
+int * get_adjacent(int vertex, int matrix_size, int matrix[][matrix_size], int *adj_size) {
+    int *adjacent = malloc(sizeof(int) * matrix_size);
+    for(int i = 0, j = 0; i < matrix_size; i++) {
+        if(matrix[i][vertex] != 0) {
+            adjacent[j++] = i; 
+            (*adj_size)++;
+        }
+    }
+    return adjacent;
+}
+
+int compare_adjacent(const void* a, const void* b) {
+    int adj_a = *((int*)a);
+    int adj_b = *((int*)b);
+    return (adj_a > adj_b) - (adj_a < adj_b);
 }
 
 void print_matrix(int size, int matrix[][size]) {
