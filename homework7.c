@@ -11,10 +11,15 @@
 
 enum Color { WHITE, GRAY, BLACK };
 
+typedef struct {
+    int size;
+    int *elements;
+} Result;
+
 int get_vertex(char *course_name, char *courses[], int size);
 void print_matrix(int size, int matrix[][size]);
-void depth_first_search(int size, int matrix[][size], int *result);
-void dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, int *pred);
+int depth_first_search(int size, int matrix[][size], Result *result);
+int dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, int *pred, Result *result);
 
 int main() {
     printf("\nThis program will read, from a file, a list of courses and their prerequisites and will print the list in which to take courses.\n");
@@ -76,6 +81,25 @@ int main() {
     }
     printf("\nAdjacency matrix:\n");
     print_matrix(size, matrix);
+
+    Result *result = (Result *) malloc(sizeof(Result));
+    result->size = 0;
+    result->elements = malloc(sizeof(int) * MAX_FILE_LENGTH);
+    
+    int res_size = depth_first_search(size, matrix, result);
+    if(res_size == -1) {
+        printf("Cycle found. ending program.\n");
+        return 0;
+    }
+
+    printf("\nCourses to take in order:\n");
+    for(int i = 0; i < result->size; i++) {
+        
+        int vertex = result->elements[i];
+        char *course = courses[vertex];
+
+        printf("%d. %s\n", i, course);
+    }
     return 0;
 }
 
@@ -88,7 +112,7 @@ int get_vertex(char *course_name, char *courses[], int size) {
     return 0;   
 }
 
-void depth_first_search(int size, int matrix[][size], int *result) {
+int depth_first_search(int size, int matrix[][size], Result *result) {
     enum Color colors[size];
     int pred[size];
     
@@ -99,15 +123,30 @@ void depth_first_search(int size, int matrix[][size], int *result) {
 
     for(int i = 0; i < size; i++) {
         if(colors[i] == WHITE) {
-            dfs_visit(size, matrix, i, colors, pred);
+            return dfs_visit(size, matrix, i, colors, pred, result);
         }
     }
+
+    return 0;
 }
 
-void dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, int *pred) {
-
+int dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, int *pred, Result *result) {
     colors[vertex] = GRAY;
-
+    for(int i = 0; i < size; i++) {
+        int adj = matrix[vertex][i];
+        printf("adjacent node %d\n", adj);
+        if(colors[adj] == WHITE) {
+            pred[adj] = vertex;
+            dfs_visit(size, matrix, vertex, colors, pred, result);
+        }
+        if(colors[adj] == GRAY) {
+            return -1;
+        }
+    }
+    colors[vertex] = BLACK;
+    result->elements[result->size] = vertex;
+    result->size++;
+    return result->size;
 }
 
 void print_matrix(int size, int matrix[][size]) {
