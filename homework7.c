@@ -4,7 +4,6 @@
 
 #define MAX_LINE_LENGTH 1000
 #define MAX_FILE_LENGTH 100
-#define MAX_COURSE_NAME_LENGTH 30
 #define MAX_FILE_NAME_LENGTH 30
 
 // Brennan Ziadeh, 1001773667 CSE 3318, Homework #7
@@ -22,7 +21,6 @@ void depth_first_search(int size, int matrix[][size], Result *result);
 void dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, Result *result);
 int *get_adjacent(int vertex, int matrix_size, int matrix[][matrix_size], int *adj_size);
 int compare_adjacent(const void* a, const void* b);
-int *reverse(int *vertex_array, int size);
 
 int main() {
     printf("\nThis program will read, from a file, a list of courses and their prerequisites and will print the list in which to take courses.\n");
@@ -87,23 +85,35 @@ int main() {
 
     Result *result = (Result *) malloc(sizeof(Result));
     result->size = 0;
-    result->elements = malloc(sizeof(int) * MAX_FILE_LENGTH);
+    result->elements = malloc(sizeof(int) * size);
     
     depth_first_search(size, matrix, result);
-    if(result->size < 1) {
+    if(result->size >= 1) {
+        // make sure the results are not empty
+        printf("\nOrder in which to take courses:\n");
+        for(int i = result->size - 1; i >= 0; i--) {
+            
+            int vertex = result->elements[i];
+            char *course = courses[vertex];
+
+            printf("%d. - %s (corresponds to graph vertex %d)\n", result->size - i, course, vertex);
+        }
+        printf("\n");
+    } else {
+        // cycle occurred
         printf("There was at least one cycle. There is no possible ordering of the courses.\n\n");
-        return 0;
     }
 
-    printf("\nOrder in which to take courses:\n");
-    for(int i = result->size - 1; i >= 0; i--) {
-        
-        int vertex = result->elements[i];
-        char *course = courses[vertex];
-
-        printf("%d. - %s (corresponds to graph vertex %d)\n", i+1, course, vertex);
+    // free memory that was dynamically allocated
+    // throughout the program
+    for(int i = 0; i < size; i++) {
+        free(courses[i]);
     }
-    printf("\n");
+    
+    free(result->elements);
+    free(result);
+    
+    fclose(file);
     return 0;
 }
 
@@ -144,14 +154,22 @@ void dfs_visit(int size, int matrix[][size], int vertex, enum Color *colors, Res
         if(color == WHITE) {
             dfs_visit(size, matrix, adj_vertex, colors, result);
         } else if(color == GRAY) {
+            free(adjacent);
             result->size = -1;
             return;
         }
+    }
+    
+    // cycle occured, do not continue
+    if(result->size == -1) {
+        free(adjacent);
+        return;
     }
 
     colors[vertex] = BLACK;
     result->elements[result->size] = vertex;
     result->size++;
+    free(adjacent);
 }
 
 int * get_adjacent(int vertex, int matrix_size, int matrix[][matrix_size], int *adj_size) {
