@@ -90,18 +90,19 @@ int main() {
     
     depth_first_search(size, matrix, result);
     if(result->size == -1) {
-        printf("Cycle found. ending program.\n");
+        printf("There was at least one cycle. There is no possible ordering of the courses.\n\n");
         return 0;
     }
 
-    printf("\nCourses to take in order:\n");
+    printf("\nOrder in which to take courses:\n");
     for(int i = 0; i < result->size; i++) {
         
         int vertex = result->elements[i];
         char *course = courses[vertex];
 
-        printf("%d. %s\n", i, course);
+        printf("%d. - %s (corresponds to graph vertex %d)\n", i+1, course, vertex);
     }
+    printf("\n");
     return 0;
 }
 
